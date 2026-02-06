@@ -20,7 +20,7 @@ const upload = multer({
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Configuração do transportador de email
 let transporter;
@@ -77,9 +77,8 @@ transporter.verify((error, success) => {
 
 // Rota principal
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
-
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({
@@ -243,8 +242,9 @@ app.post('/api/test-connection', async (req, res) => {
 
 // 404
 app.use((req, res) => {
-    res.status(404).json({ success: false, message: 'Rota não encontrada' });
+  res.status(404).send('Página não encontrada');
 });
+
 
 // Erro geral
 app.use((err, req, res, next) => {
