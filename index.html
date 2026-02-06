@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Envio de Emails em Massa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .status-badge.online {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-badge.offline {
+            background: #f44336;
+            color: white;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .email-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+
+        .email-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .email-tag button {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .email-tag button:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .email-count {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 25px;
+        }
+
+        .instructions h3 {
+            color: #1565c0;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .instructions p {
+            color: #1565c0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .results-summary h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .results-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .result-item.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-item.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Sistema de Envio de Emails em Massa</h1>
+            <p>Envie a mesma mensagem para múltiplos destinatários</p>
+            <div class="status-badge" id="serverStatus">Verificando...</div>
+        </div>
+
+        <div class="content">
+            <button class="btn-secondary" onclick="testConnection()">🔌 Testar Conexão com Servidor</button>
+
+            <div class="instructions">
+                <h3>ℹ️ Como usar</h3>
+                <p>1. Adicione os emails dos destinatários (pressione Enter após cada um)<br>
+                2. Preencha o assunto e a mensagem<br>
+                3. Clique em "Enviar Emails" para disparar para todos os destinatários</p>
+            </div>
+
+            <form id="emailForm">
+                <div class="form-group">
+                    <label for="senderName">Seu Nome (Opcional)</label>
+                    <input type="text" id="senderName" placeholder="João Silva">
+                </div>
+
+                <div class="form-group">
+                    <label for="senderEmail">Seu Email (Remetente) *</label>
+                    <input type="email" id="senderEmail" placeholder="seu.email@exemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipientEmail">
+                        Adicionar Destinatário * 
+                        <span class="email-count" id="emailCount">0 emails</span>
+                    </label>
+                    <input type="email" id="recipientEmail" placeholder="destinatario@exemplo.com">
+                    <div class="help-text">Digite um email e pressione Enter</div>
+                    <div class="email-tags" id="emailTags"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Assunto *</label>
+                    <input type="text" id="subject" placeholder="Digite o assunto do email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Mensagem *</label>
+                    <textarea id="message" placeholder="Digite a mensagem que será enviada para todos os destinatários" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary" id="sendBtn">
+                    Enviar Emails
+                </button>
+
+                <div class="status-message" id="statusMessage"></div>
+                <div id="resultsContainer"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        
+        const recipientEmailInput = document.getElementById('recipientEmail');
+        const emailTagsContainer = document.getElementById('emailTags');
+        const emailCountDisplay = document.getElementById('emailCount');
+        const statusMessage = document.getElementById('statusMessage');
+        const sendBtn = document.getElementById('sendBtn');
+        const emailForm = document.getElementById('emailForm');
+        const serverStatus = document.getElementById('serverStatus');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        let recipientEmails = [];
+
+        // Verificar status do servidor ao carregar
+        window.addEventListener('load', checkServerStatus);
+
+        // Função para verificar status do servidor
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    serverStatus.textContent = data.devMode ? '🟡 Online (Modo Dev)' : '🟢 Online';
+                    serverStatus.className = 'status-badge online';
+                } else {
+                    serverStatus.textContent = '🔴 Offline';
+                    serverStatus.className = 'status-badge offline';
+                }
+            } catch (error) {
+                serverStatus.textContent = '🔴 Servidor Desconectado';
+                serverStatus.className = 'status-badge offline';
+                console.error('Erro ao verificar servidor:', error);
+            }
+        }
+
+        // Função para testar conexão
+        async function testConnection() {
+            try {
+                showStatus('Testando conexão com servidor de email...', 'info');
+                
+                const response = await fetch(`${API_URL}/test-connection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('✅ ' + data.message, 'success');
+                } else {
+                    showStatus('❌ ' + data.message + ': ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Erro ao conectar com o servidor: ' + error.message, 'error');
+            }
+        }
+
+        // Função para validar email
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Função para adicionar email
+        function addEmail() {
+            const email = recipientEmailInput.value.trim();
+            
+            if (!email) return;
+
+            if (!isValidEmail(email)) {
+                showStatus('Por favor, insira um email válido.', 'error');
+                return;
+            }
+
+            if (recipientEmails.includes(email)) {
+                showStatus('Este email já foi adicionado.', 'warning');
+                return;
+            }
+
+            recipientEmails.push(email);
+            recipientEmailInput.value = '';
+            updateEmailTags();
+            hideStatus();
+        }
+
+        // Função para remover email
+        function removeEmail(email) {
+            recipientEmails = recipientEmails.filter(e => e !== email);
+            updateEmailTags();
+        }
+
+        // Função para atualizar as tags de email
+        function updateEmailTags() {
+            emailTagsContainer.innerHTML = '';
+            
+            recipientEmails.forEach(email => {
+                const tag = document.createElement('div');
+                tag.className = 'email-tag';
+                tag.innerHTML = `
+                    ${email}
+                    <button type="button" onclick="removeEmail('${email}')">×</button>
+                `;
+                emailTagsContainer.appendChild(tag);
+            });
+
+            emailCountDisplay.textContent = `${recipientEmails.length} email${recipientEmails.length !== 1 ? 's' : ''}`;
+        }
+
+        // Função para mostrar status
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+        }
+
+        // Função para esconder status
+        function hideStatus() {
+            statusMessage.style.display = 'none';
+        }
+
+        // Função para mostrar resultados
+        function showResults(results) {
+            if (!results || results.total === 0) return;
+
+            let html = '<div class="results-summary"><h4>📊 Resultados do Envio:</h4>';
+            html += `<p><strong>Total:</strong> ${results.total} | <strong>Sucesso:</strong> ${results.successful.length} | <strong>Falhas:</strong> ${results.failed.length}</p>`;
+            
+            if (results.successful.length > 0 || results.failed.length > 0) {
+                html += '<div class="results-list">';
+                
+                results.successful.forEach(item => {
+                    html += `<div class="result-item success">✅ ${item.email}</div>`;
+                });
+                
+                results.failed.forEach(item => {
+                    html += `<div class="result-item failed">❌ ${item.email} - ${item.error}</div>`;
+                });
+                
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            resultsContainer.innerHTML = html;
+        }
+
+        // Event listener para adicionar email ao pressionar Enter
+        recipientEmailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addEmail();
+            }
+        });
+
+        // Event listener para o formulário
+        emailForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (recipientEmails.length === 0) {
+                showStatus('Por favor, adicione pelo menos um destinatário.', 'error');
+                return;
+            }
+
+            const senderName = document.getElementById('senderName').value;
+            const senderEmail = document.getElementById('senderEmail').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            // Preparar dados para envio
+            const emailData = {
+                senderName,
+                senderEmail,
+                recipients: recipientEmails,
+                subject,
+                message
+            };
+
+            // Desabilitar botão e mostrar loading
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading-spinner"></span>Enviando emails...';
+            resultsContainer.innerHTML = '';
+            
+            showStatus('Processando envio dos emails...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/send-emails`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(emailData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('✅ ' + data.message, 'success');
+                    showResults(data.results);
+                    
+                    // Limpar formulário após sucesso
+                    setTimeout(() => {
+                        if (confirm('Deseja limpar o formulário para um novo envio?')) {
+                            emailForm.reset();
+                            recipientEmails = [];
+                            updateEmailTags();
+                            hideStatus();
+                            resultsContainer.innerHTML = '';
+                        }
+                    }, 2000);
+                } else {
+                    showStatus('⚠️ ' + data.message, 'warning');
+                    showResults(data.results);
+                }
+
+            } catch (error) {
+                showStatus('❌ Erro ao enviar emails: ' + error.message, 'error');
+                console.error('Erro:', error);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Enviar Emails';
+            }
+        });
+
+        // Tornar funções globais
+        window.removeEmail = removeEmail;
+        window.testConnection = testConnection;
+    </script>
+</body>
+</html>

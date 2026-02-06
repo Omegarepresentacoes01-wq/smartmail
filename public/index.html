@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Mail - Sistema de Envio de Emails</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        .app-layout { display: flex; min-height: 100vh; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-section {
+            padding: 16px 12px 8px;
+        }
+
+        .nav-section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover { background: #f1f5f9; color: #1e293b; }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            flex-shrink: 0;
+        }
+
+        .status-dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 32px 40px;
+            max-width: 780px;
+            margin-right: auto;
+            margin-left: calc(260px + ((100% - 260px - 780px) / 2));
+        }
+
+        .page-header { margin-bottom: 28px; }
+
+        .page-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .page-header p { color: #64748b; font-size: 14px; }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title svg { width: 18px; height: 18px; color: #6366f1; }
+
+        /* ===== FORM ===== */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .form-group { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        label .required { color: #ef4444; }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        input::placeholder, textarea::placeholder { color: #9ca3af; }
+
+        textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+
+        .help-text { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+        /* ===== EMAIL TAGS ===== */
+        .email-input-wrapper { display: flex; gap: 8px; }
+        .email-input-wrapper input { flex: 1; }
+
+        .btn-add-email {
+            padding: 10px 16px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-add-email:hover { background: #4f46e5; }
+
+        .email-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+        .email-tag {
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .email-tag button {
+            background: none;
+            border: none;
+            color: #6366f1;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            transition: color 0.2s;
+        }
+
+        .email-tag button:hover { color: #ef4444; }
+
+        .email-counter {
+            display: inline-flex;
+            align-items: center;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ===== FILE UPLOAD ===== */
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .file-upload-area:hover,
+        .file-upload-area.dragover {
+            border-color: #6366f1;
+            background: #eef2ff;
+        }
+
+        .upload-icon { width: 48px; height: 48px; margin: 0 auto 12px; color: #94a3b8; }
+
+        .file-upload-area h4 { color: #374151; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .file-upload-area p { color: #9ca3af; font-size: 12px; }
+        .file-upload-area span.browse { color: #6366f1; font-weight: 600; text-decoration: underline; }
+
+        .file-list { margin-top: 12px; }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .file-icon {
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0;
+        }
+
+        .file-icon.img { background: #fce7f3; color: #db2777; }
+        .file-icon.pdf { background: #fee2e2; color: #dc2626; }
+        .file-icon.doc { background: #dbeafe; color: #2563eb; }
+        .file-icon.xls { background: #dcfce7; color: #16a34a; }
+        .file-icon.zip { background: #fef9c3; color: #ca8a04; }
+        .file-icon.other { background: #f1f5f9; color: #64748b; }
+
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-size: 13px; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-size { font-size: 11px; color: #9ca3af; }
+
+        .file-remove {
+            background: none; border: none; color: #94a3b8; cursor: pointer;
+            padding: 4px; border-radius: 4px; transition: all 0.2s; display: flex;
+        }
+        .file-remove:hover { color: #ef4444; background: #fef2f2; }
+
+        .files-summary {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; padding: 8px 12px;
+            background: #eef2ff; border-radius: 8px; font-size: 12px; color: #4338ca;
+        }
+
+        .btn-clear-files {
+            background: none; border: none; color: #ef4444; cursor: pointer;
+            font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white; border: none; padding: 12px 28px; border-radius: 10px;
+            font-size: 15px; font-weight: 600; cursor: pointer; width: 100%;
+            transition: all 0.3s; font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; top: 24px; right: 24px; padding: 14px 20px;
+            border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 1000;
+            display: none; animation: slideIn 0.3s ease; max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .toast.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .toast.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+        /* ===== SPINNER ===== */
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
+            border-top-color: white; animation: spin 0.7s linear infinite;
+            margin-right: 8px; vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== RESULTS ===== */
+        .results-stats { display: flex; gap: 16px; }
+        .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+        .stat-success { color: #16a34a; }
+        .stat-failed { color: #dc2626; }
+        .stat-total { color: #64748b; }
+
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+        .result-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; margin-bottom: 4px; border-radius: 6px; font-size: 13px;
+        }
+
+        .result-item.success { background: #f0fdf4; color: #166534; }
+        .result-item.failed { background: #fef2f2; color: #991b1b; }
+
+        .results-list { max-height: 250px; overflow-y: auto; }
+        .results-list::-webkit-scrollbar { width: 4px; }
+        .results-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 200; display: none;
+            align-items: center; justify-content: center;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal {
+            background: white; border-radius: 16px; padding: 32px;
+            max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .modal h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
+        .modal p { color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+        .modal .shortcut { background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; color: #475569; }
+
+        .modal-close {
+            margin-top: 20px; padding: 10px 24px; background: #6366f1; color: white;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+        }
+
+        .modal-close:hover { background: #4f46e5; }
+
+        .kbd-list { list-style: none; margin: 12px 0; }
+        .kbd-list li { padding: 6px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #475569; }
+        .kbd-list li:last-child { border-bottom: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .main-content { margin-left: 260px; margin-right: auto; max-width: none; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px 16px; max-width: none; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>
+                    <div class="brand-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    </div>
+                    Smart Mail
+                </h1>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">Principal</div>
+                <div class="nav-item active" onclick="showSection('compose')">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                    Novo Envio
+                </div>
+                <div class="nav-item" onclick="testConnection()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    Testar Conexao
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">Ferramentas</div>
+                <div class="nav-item" onclick="clearForm()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    Limpar Formulario
+                </div>
+                <div class="nav-item" onclick="openShortcuts()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M6 9h1"/><path d="M17 9h1"/><path d="M11 9h2"/><path d="M6 13h12"/></svg>
+                    Atalhos
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">Informacoes</div>
+                <div class="nav-item" onclick="openHelp()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    Ajuda
+                </div>
+                <div class="nav-item" onclick="openAbout()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    Sobre
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="server-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="serverStatusText">Conectando...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <div class="page-header">
+                <h2>Novo Envio</h2>
+                <p>Envie emails profissionais para multiplos destinatarios com anexos</p>
+            </div>
+
+            <form id="emailForm" enctype="multipart/form-data">
+                <div class="card">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Remetente
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="senderName">Nome</label>
+                            <input type="text" id="senderName" placeholder="Smart PVH">
+                        </div>
+                        <div class="form-group">
+                            <label for="senderEmail">Email <span class="required">*</span></label>
+                            <input type="email" id="senderEmail" placeholder="smart@smartpvh.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Destinatarios
+                        <span class="email-counter" id="emailCount">0</span>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="email-input-wrapper">
+                            <input type="email" id="recipientEmail" placeholder="email@exemplo.com (Enter para adicionar)">
+                            <button type="button" class="btn-add-email" onclick="addEmail()">Adicionar</button>
+                        </div>
+                        <div class="help-text">Pressione Enter ou clique em Adicionar. Cole varios emails separados por virgula.</div>
+                        <div class="email-tags" id="emailTags"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                        Conteudo do Email
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Assunto <span class="required">*</span></label>
+                        <input type="text" id="subject" placeholder="Digite o assunto do email" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="message">Mensagem <span class="required">*</span></label>
+                        <textarea id="message" placeholder="Escreva sua mensagem aqui..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                        Anexos
+                    </div>
+                    <div class="file-upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        <h4>Arraste arquivos aqui ou <span class="browse">clique para selecionar</span></h4>
+                        <p>Imagens, PDFs, documentos, planilhas, comprovantes (max 25MB total)</p>
+                    </div>
+                    <input type="file" id="fileInput" multiple hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.zip,.rar">
+                    <div class="file-list" id="fileList"></div>
+                    <div class="files-summary" id="filesSummary" style="display: none;">
+                        <span id="filesTotalInfo"></span>
+                        <button type="button" class="btn-clear-files" onclick="clearAllFiles()">Remover todos</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="sendBtn">Enviar Emails</button>
+                <div id="resultsContainer"></div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal">
+            <h3>Como usar o Smart Mail</h3>
+            <p><strong>1.</strong> Preencha seu nome e email no card Remetente.</p>
+            <p><strong>2.</strong> Adicione os emails dos destinatarios. Voce pode colar varios de uma vez separados por virgula.</p>
+            <p><strong>3.</strong> Escreva o assunto e a mensagem do email.</p>
+            <p><strong>4.</strong> Opcionalmente, anexe arquivos arrastando ou clicando na area de upload.</p>
+            <p><strong>5.</strong> Clique em "Enviar Emails" para disparar para todos.</p>
+            <button class="modal-close" onclick="closeModal('helpModal')">Entendi</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal">
+            <h3>Atalhos do Teclado</h3>
+            <ul class="kbd-list">
+                <li>Adicionar email <span class="shortcut">Enter</span></li>
+                <li>Enviar emails <span class="shortcut">Ctrl + Enter</span></li>
+                <li>Limpar formulario <span class="shortcut">Ctrl + Shift + L</span></li>
+                <li>Testar conexao <span class="shortcut">Ctrl + Shift + T</span></li>
+            </ul>
+            <button class="modal-close" onclick="closeModal('shortcutsModal')">Fechar</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal">
+            <h3>Smart Mail v1.0</h3>
+            <p>Sistema profissional de envio de emails em massa com suporte a anexos.</p>
+            <p>Desenvolvido com Node.js, Express e Nodemailer.</p>
+            <p style="margin-top: 12px; color: #94a3b8; font-size: 12px;">Suporta: Gmail, SMTP, SendGrid, AWS SES</p>
+            <button class="modal-close" onclick="closeModal('aboutModal')">Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        var API_URL = window.location.origin + '/api';
+
+        var recipientEmailInput = document.getElementById('recipientEmail');
+        var emailTagsContainer = document.getElementById('emailTags');
+        var emailCountDisplay = document.getElementById('emailCount');
+        var sendBtn = document.getElementById('sendBtn');
+        var emailForm = document.getElementById('emailForm');
+        var statusDot = document.getElementById('statusDot');
+        var serverStatusText = document.getElementById('serverStatusText');
+        var resultsContainer = document.getElementById('resultsContainer');
+        var toast = document.getElementById('toast');
+        var dropZone = document.getElementById('dropZone');
+        var fileInput = document.getElementById('fileInput');
+        var fileList = document.getElementById('fileList');
+        var filesSummary = document.getElementById('filesSummary');
+        var filesTotalInfo = document.getElementById('filesTotalInfo');
+
+        var recipientEmails = [];
+        var attachedFiles = [];
+        var MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+
+        // ===== SERVER STATUS =====
+        window.addEventListener('load', checkServerStatus);
+
+        async function checkServerStatus() {
+            try {
+                var response = await fetch(API_URL + '/health');
+                var data = await response.json();
+                if (data.status === 'ok') {
+                    statusDot.classList.add('online');
+                    serverStatusText.textContent = data.devMode ? 'Online (Dev)' : 'Online';
+                } else {
+                    serverStatusText.textContent = 'Offline';
+                }
+            } catch (error) {
+                serverStatusText.textContent = 'Desconectado';
+            }
+        }
+
+        // ===== TEST CONNECTION =====
+        async function testConnection() {
+            try {
+                showToast('Testando conexao com servidor de email...', 'info');
+                var response = await fetch(API_URL + '/test-connection', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                var data = await response.json();
+                showToast(data.success ? 'Conexao estabelecida com sucesso!' : 'Falha na conexao: ' + data.error, data.success ? 'success' : 'error');
+            } catch (error) {
+                showToast('Erro ao conectar: ' + error.message, 'error');
+            }
+        }
+
+        // ===== EMAIL =====
+        function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+
+        function addEmail() {
+            var raw = recipientEmailInput.value.trim();
+            if (!raw) return;
+            var emails = raw.split(/[,;\s]+/).map(function(e) { return e.trim(); }).filter(function(e) { return e; });
+            var added = 0;
+            for (var i = 0; i < emails.length; i++) {
+                if (!isValidEmail(emails[i])) { showToast('Email invalido: ' + emails[i], 'error'); continue; }
+                if (recipientEmails.indexOf(emails[i]) !== -1) continue;
+                recipientEmails.push(emails[i]);
+                added++;
+            }
+            if (added > 0) { recipientEmailInput.value = ''; updateEmailTags(); }
+        }
+
+        function removeEmail(email) {
+            recipientEmails = recipientEmails.filter(function(e) { return e !== email; });
+            updateEmailTags();
+        }
+
+        function updateEmailTags() {
+            emailTagsContainer.innerHTML = '';
+            recipientEmails.forEach(function(email) {
+                var tag = document.createElement('div');
+                tag.className = 'email-tag';
+                tag.innerHTML = email + ' <button type="button" onclick="removeEmail(\'' + email + '\')">&times;</button>';
+                emailTagsContainer.appendChild(tag);
+            });
+            emailCountDisplay.textContent = recipientEmails.length;
+        }
+
+        recipientEmailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); addEmail(); }
+        });
+
+        // ===== FILES =====
+        dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', function() { handleFiles(fileInput.files); fileInput.value = ''; });
+
+        function handleFiles(files) {
+            for (var i = 0; i < files.length; i++) {
+                var totalSize = attachedFiles.reduce(function(sum, f) { return sum + f.size; }, 0) + files[i].size;
+                if (totalSize > MAX_TOTAL_SIZE) { showToast('Limite de 25MB excedido.', 'error'); return; }
+                if (attachedFiles.some(function(f) { return f.name === files[i].name && f.size === files[i].size; })) continue;
+                attachedFiles.push(files[i]);
+            }
+            renderFileList();
+        }
+
+        function removeFile(index) { attachedFiles.splice(index, 1); renderFileList(); }
+        function clearAllFiles() { attachedFiles = []; renderFileList(); }
+
+        function getFileType(name) {
+            var ext = name.split('.').pop().toLowerCase();
+            if (['jpg','jpeg','png','gif','svg','webp','bmp'].indexOf(ext) !== -1) return 'img';
+            if (ext === 'pdf') return 'pdf';
+            if (['doc','docx','odt','rtf','txt'].indexOf(ext) !== -1) return 'doc';
+            if (['xls','xlsx','csv','ods'].indexOf(ext) !== -1) return 'xls';
+            if (['zip','rar','7z','tar','gz'].indexOf(ext) !== -1) return 'zip';
+            return 'other';
+        }
+
+        function getFileTypeLabel(type) {
+            return { img: 'IMG', pdf: 'PDF', doc: 'DOC', xls: 'XLS', zip: 'ZIP', other: 'FILE' }[type] || 'FILE';
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            attachedFiles.forEach(function(file, i) {
+                var type = getFileType(file.name);
+                var div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = '<div class="file-icon ' + type + '">' + getFileTypeLabel(type) + '</div><div class="file-info"><div class="file-name">' + file.name + '</div><div class="file-size">' + formatSize(file.size) + '</div></div><button type="button" class="file-remove" onclick="removeFile(' + i + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+                fileList.appendChild(div);
+            });
+            var totalSize = attachedFiles.reduce(function(sum, f) { return sum + f.size; }, 0);
+            if (attachedFiles.length > 0) {
+                filesSummary.style.display = 'flex';
+                filesTotalInfo.textContent = attachedFiles.length + ' arquivo(s) - ' + formatSize(totalSize) + ' de 25MB';
+            } else { filesSummary.style.display = 'none'; }
+        }
+
+        // ===== TOAST =====
+        var toastTimeout;
+        function showToast(message, type) {
+            clearTimeout(toastTimeout);
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            toastTimeout = setTimeout(function() { toast.style.display = 'none'; }, 5000);
+        }
+
+        // ===== RESULTS =====
+        function showResults(results) {
+            if (!results || results.total === 0) return;
+            var html = '<div class="card" style="margin-top: 20px;"><div class="results-header"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:#6366f1;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Resultados</div><div class="results-stats"><span class="stat stat-total">' + results.total + ' total</span><span class="stat stat-success">' + results.successful.length + ' enviados</span><span class="stat stat-failed">' + results.failed.length + ' falhas</span></div></div><div class="results-list">';
+            results.successful.forEach(function(item) { html += '<div class="result-item success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ' + item.email + '</div>'; });
+            results.failed.forEach(function(item) { html += '<div class="result-item failed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ' + item.email + ' - ' + item.error + '</div>'; });
+            html += '</div></div>';
+            resultsContainer.innerHTML = html;
+        }
+
+        // ===== SIDEBAR FUNCTIONS =====
+        function clearForm() {
+            emailForm.reset();
+            recipientEmails = [];
+            attachedFiles = [];
+            updateEmailTags();
+            renderFileList();
+            resultsContainer.innerHTML = '';
+            showToast('Formulario limpo!', 'success');
+        }
+
+        function showSection(section) { /* future: toggle between pages */ }
+
+        function openHelp() { document.getElementById('helpModal').classList.add('show'); }
+        function openShortcuts() { document.getElementById('shortcutsModal').classList.add('show'); }
+        function openAbout() { document.getElementById('aboutModal').classList.add('show'); }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+        // Close modals clicking overlay
+        document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) overlay.classList.remove('show');
+            });
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); emailForm.dispatchEvent(new Event('submit')); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'L') { e.preventDefault(); clearForm(); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'T') { e.preventDefault(); testConnection(); }
+        });
+
+        // ===== FORM SUBMIT =====
+        emailForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (recipientEmails.length === 0) { showToast('Adicione pelo menos um destinatario.', 'error'); return; }
+
+            var senderName = document.getElementById('senderName').value;
+            var senderEmail = document.getElementById('senderEmail').value;
+            var subject = document.getElementById('subject').value;
+            var message = document.getElementById('message').value;
+
+            var formData = new FormData();
+            formData.append('senderName', senderName);
+            formData.append('senderEmail', senderEmail);
+            formData.append('subject', subject);
+            formData.append('message', message);
+            recipientEmails.forEach(function(email) { formData.append('recipients', email); });
+            attachedFiles.forEach(function(file) { formData.append('attachments', file); });
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="spinner"></span>Enviando...';
+            resultsContainer.innerHTML = '';
+            showToast('Processando envio dos emails...', 'info');
+
+            try {
+                var response = await fetch(API_URL + '/send-emails', { method: 'POST', body: formData });
+                var data = await response.json();
+                if (data.success) { showToast('Todos os emails foram enviados com sucesso!', 'success'); }
+                else { showToast(data.message || 'Alguns emails falharam', 'warning'); }
+                showResults(data.results);
+            } catch (error) {
+                showToast('Erro ao enviar: ' + error.message, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Enviar Emails';
+            }
+        });
+
+        window.removeEmail = removeEmail;
+        window.removeFile = removeFile;
+        window.clearAllFiles = clearAllFiles;
+        window.testConnection = testConnection;
+        window.addEmail = addEmail;
+        window.clearForm = clearForm;
+        window.showSection = showSection;
+        window.openHelp = openHelp;
+        window.openShortcuts = openShortcuts;
+        window.openAbout = openAbout;
+        window.closeModal = closeModal;
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Dependências
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variáveis de ambiente (NUNCA commitar!)
+.env
+.env.local
+.env.production
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Temporários
+tmp/
+temp/
+*.tmp
+
+# Build
+dist/
+build/
