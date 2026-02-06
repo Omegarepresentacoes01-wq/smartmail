@@ -23,10 +23,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Configuração do transportador de email
-let transporter;
+function env(key) {
+    return (process.env[key] || '').trim();
+}
 
 function createTransporter() {
-    if (process.env.DEV_MODE === 'true') {
+    if (env('DEV_MODE') === 'true') {
         console.log('🔧 Modo de desenvolvimento ativado - emails serão apenas simulados');
         return nodemailer.createTransport({
             streamTransport: true,
@@ -35,24 +37,26 @@ function createTransporter() {
         });
     }
 
-    if (process.env.EMAIL_SERVICE === 'gmail') {
+    if (env('EMAIL_SERVICE') === 'gmail') {
         return nodemailer.createTransport({
             service: 'gmail',
+            pool: false,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD
+                user: env('EMAIL_USER'),
+                pass: env('EMAIL_PASSWORD')
             }
         });
     }
 
-    if (process.env.EMAIL_HOST) {
+    if (env('EMAIL_HOST')) {
         return nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT || 587,
-            secure: process.env.EMAIL_SECURE === 'true',
+            host: env('EMAIL_HOST'),
+            port: env('EMAIL_PORT') || 587,
+            secure: env('EMAIL_SECURE') === 'true',
+            pool: false,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD
+                user: env('EMAIL_USER'),
+                pass: env('EMAIL_PASSWORD')
             }
         });
     }
@@ -65,27 +69,22 @@ function createTransporter() {
     });
 }
 
-transporter = createTransporter();
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.log('❌ Erro ao conectar com servidor de email:', error.message);
-    } else {
-        console.log('✅ Servidor de email pronto para enviar mensagens');
-    }
-});
-
 // Rota principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 // Health check
 app.get('/api/health', (req, res) => {
+    const emailService = env('EMAIL_SERVICE');
+    const emailUser = env('EMAIL_USER');
     res.json({
         status: 'ok',
         service: 'Bulk Email Sender API',
         timestamp: new Date().toISOString(),
-        devMode: process.env.DEV_MODE === 'true'
+        devMode: env('DEV_MODE') === 'true',
+        emailConfigured: emailService === 'gmail' || !!env('EMAIL_HOST'),
+        emailService: emailService || 'none',
+        emailUser: emailUser ? emailUser.substring(0, 3) + '***' : 'not set'
     });
 });
 
@@ -129,6 +128,7 @@ app.post('/api/send-emails', upload.array('attachments', 10), async (req, res) =
     }));
 
     try {
+        const transporter = createTransporter();
         const results = {
             successful: [],
             failed: [],
@@ -137,10 +137,12 @@ app.post('/api/send-emails', upload.array('attachments', 10), async (req, res) =
 
         for (const recipient of uniqueRecipients) {
             try {
+                const authEmail = process.env.EMAIL_USER || senderEmail;
                 const mailOptions = {
                     from: senderName
-                        ? `"${senderName}" <${senderEmail}>`
-                        : senderEmail,
+                        ? `"${senderName}" <${authEmail}>`
+                        : authEmail,
+                    replyTo: senderEmail,
                     to: recipient,
                     subject: subject,
                     html: `<!DOCTYPE html>
@@ -185,7 +187,10 @@ app.post('/api/send-emails', upload.array('attachments', 10), async (req, res) =
 
                 results.successful.push({
                     email: recipient,
-                    messageId: info.messageId
+                    messageId: info.messageId,
+                    response: info.response,
+                    accepted: info.accepted,
+                    rejected: info.rejected
                 });
 
                 console.log(`✅ Email enviado para: ${recipient}${attachments.length > 0 ? ` (${attachments.length} anexo(s))` : ''}`);
@@ -201,6 +206,7 @@ app.post('/api/send-emails', upload.array('attachments', 10), async (req, res) =
             await new Promise(resolve => setTimeout(resolve, 100));
         }
 
+        transporter.close();
         const allSuccessful = results.failed.length === 0;
 
         res.json({
@@ -225,7 +231,9 @@ app.post('/api/send-emails', upload.array('attachments', 10), async (req, res) =
 // Testar conexão
 app.post('/api/test-connection', async (req, res) => {
     try {
+        const transporter = createTransporter();
         await transporter.verify();
+        transporter.close();
         res.json({
             success: true,
             message: 'Conexão com servidor de email estabelecida com sucesso!',
