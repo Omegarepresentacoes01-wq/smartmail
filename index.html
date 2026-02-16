@@ -3,173 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Envio de Emails em Massa</title>
+    <meta name="theme-color" content="#003366">
+    <meta name="description" content="SmartMail - Sistema profissional de envio de emails em massa para NEXTFROTAS">
+    <title>SmartMail | NEXTFROTAS</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="public/assets/favicon.png">
+    <link rel="apple-touch-icon" href="public/assets/icon-512.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <style>
+        /* ===== RESET E VARIÁVEIS ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            /* Cores NEXTFROTAS */
+            --primary-blue: #003366;
+            --primary-orange: #FF6600;
+            --secondary-blue: #004080;
+            --light-blue: #E6F0FF;
+            --dark-blue: #001a33;
+            
+            /* Cores de suporte */
+            --white: #FFFFFF;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            
+            /* Status colors */
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --success-dark: #065F46;
+            --error: #EF4444;
+            --error-light: #FEE2E2;
+            --error-dark: #991B1B;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --warning-dark: #92400E;
+            --info: #3B82F6;
+            --info-light: #DBEAFE;
+            --info-dark: #1E40AF;
+            
+            /* Tipografia */
+            --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+            
+            /* Espaçamento */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            
+            /* Border radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* ===== ESTILOS GLOBAIS ===== */
+        body {
+            font-family: var(--font-primary);
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 50%, var(--dark-blue) 100%);
+            min-height: 100vh;
+            padding: var(--spacing-lg);
+            color: var(--gray-900);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== CONTAINER PRINCIPAL ===== */
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) var(--spacing-xl);
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-container {
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo {
+            max-width: 200px;
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 14px;
+            font-size: 1rem;
+            opacity: 0.95;
+            font-weight: 400;
+            letter-spacing: 0.01em;
         }
 
         .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-lg);
             font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-base);
         }
 
         .status-badge.online {
-            background: #4caf50;
-            color: white;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--white);
+            border-color: rgba(16, 185, 129, 0.4);
         }
 
         .status-badge.offline {
-            background: #f44336;
-            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--white);
+            border-color: rgba(239, 68, 68, 0.4);
         }
 
-        .content {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 150px;
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 6px;
-        }
-
-        .email-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            min-height: 50px;
-        }
-
-        .email-tag {
-            background: #667eea;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .email-tag button {
-            background: rgba(255, 255, 255, 0.3);
-            border: none;
-            color: white;
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
+        .status-indicator {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            display: flex;
+            background: currentColor;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content {
+            padding: var(--spacing-2xl);
+        }
+
+        /* ===== BOTÕES ===== */
+        .btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            transition: background 0.2s;
+            gap: var(--spacing-sm);
+            padding: 0.875rem 1.75rem;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            border: 2px solid transparent;
+            text-decoration: none;
+            font-family: inherit;
+            letter-spacing: 0.01em;
         }
 
-        .email-tag button:hover {
-            background: rgba(255, 255, 255, 0.5);
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.2);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary-orange) 0%, #FF8533 100%);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
             width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, #FF7700 0%, var(--primary-orange) 100%);
         }
 
-        .btn-primary:active {
+        .btn-primary:active:not(:disabled) {
             transform: translateY(0);
         }
 
@@ -180,152 +259,466 @@
         }
 
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 15px;
-            transition: all 0.2s;
+            background: var(--white);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-secondary:hover {
-            background: #667eea;
-            color: white;
+            background: var(--primary-blue);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
         }
 
-        .status-message {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
+        /* ===== FORM ELEMENTS ===== */
+        .form-group {
+            margin-bottom: var(--spacing-xl);
         }
 
-        .status-message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status-message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .status-message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .status-message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffc107;
-        }
-
-        .email-count {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+        label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
             font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.9375rem;
+            letter-spacing: 0.01em;
         }
 
-        .instructions {
-            background: #e3f2fd;
-            border: 1px solid #2196f3;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 25px;
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            transition: all var(--transition-base);
+            font-family: inherit;
+            background: var(--white);
+            color: var(--gray-900);
         }
 
-        .instructions h3 {
-            color: #1565c0;
-            font-size: 16px;
-            margin-bottom: 8px;
+        input[type="text"]:hover,
+        input[type="email"]:hover,
+        textarea:hover {
+            border-color: var(--gray-400);
         }
 
-        .instructions p {
-            color: #1565c0;
-            font-size: 13px;
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+            background: var(--white);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
             line-height: 1.6;
         }
 
+        .help-text {
+            font-size: 0.8125rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        /* ===== EMAIL TAGS ===== */
+        .email-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            min-height: 60px;
+            transition: all var(--transition-base);
+        }
+
+        .email-tags:empty::after {
+            content: 'Nenhum destinatário adicionado';
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+
+        .email-tag {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: var(--white);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all var(--transition-fast);
+        }
+
+        .email-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .email-tag button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--white);
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+            padding: 0;
+        }
+
+        .email-tag button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* ===== STATUS MESSAGES ===== */
+        .status-message {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            font-size: 0.9375rem;
+            display: none;
+            border: 2px solid;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-message.success {
+            background: var(--success-light);
+            color: var(--success-dark);
+            border-color: var(--success);
+        }
+
+        .status-message.error {
+            background: var(--error-light);
+            color: var(--error-dark);
+            border-color: var(--error);
+        }
+
+        .status-message.info {
+            background: var(--info-light);
+            color: var(--info-dark);
+            border-color: var(--info);
+        }
+
+        .status-message.warning {
+            background: var(--warning-light);
+            color: var(--warning-dark);
+            border-color: var(--warning);
+        }
+
+        /* ===== EMAIL COUNT BADGE ===== */
+        .email-count {
+            display: inline-flex;
+            align-items: center;
+            background: var(--primary-orange);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.8125rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== INSTRUCTIONS BOX ===== */
+        .instructions {
+            background: linear-gradient(135deg, var(--light-blue) 0%, #F0F7FF 100%);
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .instructions h3 {
+            color: var(--primary-blue);
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .instructions p {
+            color: var(--primary-blue);
+            font-size: 0.9375rem;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        /* ===== LOADING SPINNER ===== */
         .loading-spinner {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: var(--white);
             animation: spin 0.8s linear infinite;
-            margin-right: 8px;
+            margin-right: var(--spacing-sm);
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
+        /* ===== RESULTS SUMMARY ===== */
         .results-summary {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 13px;
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 0.9375rem;
         }
 
         .results-summary h4 {
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-800);
+            font-size: 1.125rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .results-summary p {
+            color: var(--gray-700);
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
         }
 
         .results-list {
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
+            padding-right: var(--spacing-sm);
+        }
+
+        .results-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .results-list::-webkit-scrollbar-track {
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+        }
+
+        .results-list::-webkit-scrollbar-thumb {
+            background: var(--gray-400);
+            border-radius: var(--radius-full);
+        }
+
+        .results-list::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-500);
         }
 
         .result-item {
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-sm) 0;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
         }
 
         .result-item.success {
-            background: #d4edda;
-            color: #155724;
+            background: var(--success-light);
+            color: var(--success-dark);
+            border-color: var(--success);
         }
 
         .result-item.failed {
-            background: #f8d7da;
-            color: #721c24;
+            background: var(--error-light);
+            color: var(--error-dark);
+            border-color: var(--error);
         }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-md);
+            }
+
+            .container {
+                border-radius: var(--radius-xl);
+            }
+
+            .header {
+                padding: var(--spacing-xl) var(--spacing-lg);
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.875rem;
+            }
+
+            .logo {
+                max-width: 150px;
+            }
+
+            .content {
+                padding: var(--spacing-xl);
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9375rem;
+            }
+
+            .form-group {
+                margin-bottom: var(--spacing-lg);
+            }
+
+            input[type="text"],
+            input[type="email"],
+            textarea {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.875rem;
+            }
+
+            .email-tags {
+                padding: var(--spacing-md);
+            }
+
+            .instructions {
+                padding: var(--spacing-md);
+            }
+
+            .instructions h3 {
+                font-size: 1rem;
+            }
+
+            .instructions p {
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: var(--spacing-sm);
+            }
+
+            .container {
+                border-radius: var(--radius-lg);
+            }
+
+            .header {
+                padding: var(--spacing-lg);
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            .logo {
+                max-width: 120px;
+            }
+
+            .content {
+                padding: var(--spacing-lg);
+            }
+
+            .btn {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.875rem;
+            }
+
+            .email-tag {
+                font-size: 0.8125rem;
+                padding: 0.375rem 0.75rem;
+            }
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: var(--spacing-sm); }
+        .mt-2 { margin-top: var(--spacing-md); }
+        .mt-3 { margin-top: var(--spacing-lg); }
+        .mt-4 { margin-top: var(--spacing-xl); }
+
+        .mb-1 { margin-bottom: var(--spacing-sm); }
+        .mb-2 { margin-bottom: var(--spacing-md); }
+        .mb-3 { margin-bottom: var(--spacing-lg); }
+        .mb-4 { margin-bottom: var(--spacing-xl); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📧 Sistema de Envio de Emails em Massa</h1>
-            <p>Envie a mesma mensagem para múltiplos destinatários</p>
-            <div class="status-badge" id="serverStatus">Verificando...</div>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="public/assets/logo.png" alt="NEXTFROTAS Logo" class="logo">
+                </div>
+                <h1>SmartMail</h1>
+                <p>Sistema Profissional de Envio de Emails em Massa</p>
+                <div class="status-badge" id="serverStatus">
+                    <span class="status-indicator"></span>
+                    Verificando...
+                </div>
+            </div>
         </div>
 
         <div class="content">
-            <button class="btn-secondary" onclick="testConnection()">🔌 Testar Conexão com Servidor</button>
+            <button class="btn btn-secondary mb-3" onclick="testConnection()">
+                🔌 Testar Conexão com Servidor
+            </button>
 
             <div class="instructions">
-                <h3>ℹ️ Como usar</h3>
-                <p>1. Adicione os emails dos destinatários (pressione Enter após cada um)<br>
-                2. Preencha o assunto e a mensagem<br>
-                3. Clique em "Enviar Emails" para disparar para todos os destinatários</p>
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    Como usar
+                </h3>
+                <p>
+                    <strong>1.</strong> Adicione os emails dos destinatários (pressione Enter após cada um)<br>
+                    <strong>2.</strong> Preencha o assunto e a mensagem do email<br>
+                    <strong>3.</strong> Clique em "Enviar Emails" para disparar para todos os destinatários
+                </p>
             </div>
 
             <form id="emailForm">
@@ -335,31 +728,57 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="senderEmail">Seu Email (Remetente) *</label>
+                    <label for="senderEmail">
+                        Seu Email (Remetente)
+                        <span style="color: var(--error);">*</span>
+                    </label>
                     <input type="email" id="senderEmail" placeholder="seu.email@exemplo.com" required>
                 </div>
 
                 <div class="form-group">
                     <label for="recipientEmail">
-                        Adicionar Destinatário * 
+                        <span>
+                            Adicionar Destinatário
+                            <span style="color: var(--error);">*</span>
+                        </span>
                         <span class="email-count" id="emailCount">0 emails</span>
                     </label>
                     <input type="email" id="recipientEmail" placeholder="destinatario@exemplo.com">
-                    <div class="help-text">Digite um email e pressione Enter</div>
+                    <div class="help-text">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        Digite um email e pressione Enter
+                    </div>
                     <div class="email-tags" id="emailTags"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="subject">Assunto *</label>
+                    <label for="subject">
+                        Assunto
+                        <span style="color: var(--error);">*</span>
+                    </label>
                     <input type="text" id="subject" placeholder="Digite o assunto do email" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Mensagem *</label>
-                    <textarea id="message" placeholder="Digite a mensagem que será enviada para todos os destinatários" required></textarea>
+                    <label for="message">
+                        Mensagem
+                        <span style="color: var(--error);">*</span>
+                    </label>
+                    <textarea id="message" placeholder="Digite a mensagem do email..." required></textarea>
+                    <div class="help-text">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        A mesma mensagem será enviada para todos os destinatários
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-primary" id="sendBtn">
+                <button type="submit" class="btn btn-primary" id="sendBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
                     Enviar Emails
                 </button>
 
@@ -393,14 +812,23 @@
                 const data = await response.json();
                 
                 if (data.status === 'ok') {
-                    serverStatus.textContent = data.devMode ? '🟡 Online (Modo Dev)' : '🟢 Online';
+                    serverStatus.innerHTML = `
+                        <span class="status-indicator"></span>
+                        ${data.devMode ? '🟡 Online (Modo Dev)' : '🟢 Online'}
+                    `;
                     serverStatus.className = 'status-badge online';
                 } else {
-                    serverStatus.textContent = '🔴 Offline';
+                    serverStatus.innerHTML = `
+                        <span class="status-indicator"></span>
+                        🔴 Offline
+                    `;
                     serverStatus.className = 'status-badge offline';
                 }
             } catch (error) {
-                serverStatus.textContent = '🔴 Servidor Desconectado';
+                serverStatus.innerHTML = `
+                    <span class="status-indicator"></span>
+                    🔴 Servidor Desconectado
+                `;
                 serverStatus.className = 'status-badge offline';
                 console.error('Erro ao verificar servidor:', error);
             }
@@ -591,7 +1019,12 @@
                 console.error('Erro:', error);
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.textContent = 'Enviar Emails';
+                sendBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
+                    Enviar Emails
+                `;
             }
         });
 
