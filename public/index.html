@@ -8,9 +8,9 @@
     <title>SmartMail | NEXTFROTAS</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
-    <link rel="icon" type="image/png" sizes="192x192" href="public/assets/favicon.png">
-    <link rel="apple-touch-icon" href="public/assets/icon-512.png">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/icon-512.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -691,7 +691,7 @@
         <div class="header">
             <div class="header-content">
                 <div class="logo-container">
-                    <img src="public/assets/logo.png" alt="NEXTFROTAS Logo" class="logo">
+                    <img src="assets/logo.png" alt="NEXTFROTAS Logo" class="logo">
                 </div>
                 <h1>SmartMail</h1>
                 <p>Sistema Profissional de Envio de Emails em Massa</p>
@@ -789,7 +789,10 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
+        // Detectar automaticamente a URL da API
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : '/api';
         
         const recipientEmailInput = document.getElementById('recipientEmail');
         const emailTagsContainer = document.getElementById('emailTags');
